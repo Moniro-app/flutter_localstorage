@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'src/directory/directory.dart';
+import 'package:mutex/mutex.dart';
 
 /// Creates instance of a local storage. Key is used as a filename
 class LocalStorage {
   Stream<Map<String, dynamic>> get stream => _dir.stream;
   Map<String, dynamic>? _initialData;
+  final Mutex _mutex = Mutex();
 
   static final Map<String, LocalStorage> _cache = new Map();
 
@@ -26,7 +28,6 @@ class LocalStorage {
     } else {
       final instance = LocalStorage._internal(key, path, initialData);
       _cache[key] = instance;
-
       return instance;
     }
   }
@@ -80,21 +81,26 @@ class LocalStorage {
       }
     }
 
-    await _dir.setItem(key, data);
-
-    return _flush();
+    await _mutex.protect(() async {
+      await _dir.setItem(key, data);
+      await _flush();
+    });
   }
 
   /// Removes item from storage by key
   Future<void> deleteItem(String key) async {
-    await _dir.remove(key);
-    return _flush();
+    await _mutex.protect(() async {
+      await _dir.remove(key);
+      await _flush();
+    });
   }
 
   /// Removes all items from localstorage
   Future<void> clear() async {
-    await _dir.clear();
-    return _flush();
+    await _mutex.protect(() async {
+      await _dir.clear();
+      await _flush();
+    });
   }
 
   Future<void> _flush() async {
@@ -103,6 +109,5 @@ class LocalStorage {
     } catch (e) {
       rethrow;
     }
-    return;
   }
 }
