@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart' show ValueNotifier;
-
 import 'src/directory/directory.dart';
 
 /// Creates instance of a local storage. Key is used as a filename
@@ -21,7 +19,8 @@ class LocalStorage {
 
   /// [key] is used as a filename
   /// Optional [path] is used as a directory. Defaults to application document directory
-  factory LocalStorage(String key, [String? path, Map<String, dynamic>? initialData]) {
+  factory LocalStorage(String key,
+      [String? path, Map<String, dynamic>? initialData]) {
     if (_cache.containsKey(key)) {
       return _cache[key]!;
     } else {
@@ -39,7 +38,8 @@ class LocalStorage {
     _dir.dispose();
   }
 
-  LocalStorage._internal(String key, [String? path, Map<String, dynamic>? initialData]) {
+  LocalStorage._internal(String key,
+      [String? path, Map<String, dynamic>? initialData]) {
     _dir = DirUtils(key, path);
     _initialData = initialData;
 
